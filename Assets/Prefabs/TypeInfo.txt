@@ -1,0 +1,14 @@
+DragAndDropItem 1
+*
+DragAndDropItem 2
+**
+DragAndDropItem 3
+*
+***
+DragAndDropItem 4
+*
+*
+*
+DragAndDropItem 5
+ **
+**
