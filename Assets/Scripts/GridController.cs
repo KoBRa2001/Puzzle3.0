@@ -12,12 +12,17 @@ public class GridController : MonoBehaviour
     [SerializeField] private DragController _dragController;
     [SerializeField] private ItemController _itemController;
     [SerializeField] private ScoreSystem _scoreSystem;
-    [SerializeField] private PopUpManager _gameOverPanel;
+    [SerializeField] private GameOverPopUp _gameOverPanel;
 
     private Vector2 currentPosition = Vector2.zero;
 
     private bool[,] cells;
     private ItemSlot[,] itemCells;
+
+    private HashSet<SpriteRenderer> _highlightedSlots = new HashSet<SpriteRenderer>();
+
+    private Color _defaultSlotColor = new Color32(255, 255, 255, 255);
+    private Color _highlightSlotColor = new Color32(100, 100, 100, 255);
 
     private void Awake()
     {
@@ -56,24 +61,51 @@ public class GridController : MonoBehaviour
         itemCells[i, j] = newSlot;
     }
 
-    public bool CheckCell(int x, int y, DragAndDrop item)
+    public void HighlightSlot()
     {
+        foreach(var i in _highlightedSlots)
+        {
+            i.color = _highlightSlotColor;
+        }
+    }
+
+    public void ResetHighlight()
+    {
+        foreach (var i in _highlightedSlots)
+        {
+            i.color = _defaultSlotColor;
+        }
+        _highlightedSlots.Clear();
+    }
+
+    public bool CheckCell(int x, int y, DragAndDrop item)
+    {        
         if (item == null)
             return false;
 
         foreach(var position in item.ChildPosition)
         {          
             //If out of bounds
-            if (x + position.x >= Mathf.Sqrt(cells.Length) || y + position.y >= Mathf.Sqrt(cells.Length))
-            {
+            //if (x + position.x >= Mathf.Sqrt(cells.Length) || y + position.y >= Mathf.Sqrt(cells.Length))
+            if (!IsOnBoard(x + position.x, y + position.y))
+            {                
                 return false;
             }
             if (cells[x + position.x, y + position.y] == true)
-            {
+            {             
                 return false;
+            }
+            else
+            {
+                _highlightedSlots.Add(itemCells[x + position.x, y + position.y].GetComponent<SpriteRenderer>());
             }
         }
         return true;
+    }
+
+    private bool IsOnBoard(int x, int y)
+    {        
+        return !(x < 0 || x >= width || y < 0 || y >= heigth);
     }
 
     public void SetCell(int x, int y, DiamandItem prefab)
@@ -122,7 +154,9 @@ public class GridController : MonoBehaviour
             }
                      
         }
-        //Debug.LogError($"Cant find pos");
+        //Debug.LogError($"Cant find pos");        
+
+        AudioManager.Instance.PlayAudio(AudioIndexes.GameOver);
 
         _gameOverPanel.GameOver();
 
@@ -132,7 +166,7 @@ public class GridController : MonoBehaviour
     public void NewGame()
     {
         Reset();
-        _scoreSystem.Reset();
+        _scoreSystem.Clear();
         _itemController.Reset();
     }
 
@@ -140,12 +174,16 @@ public class GridController : MonoBehaviour
     {
         HashSet<Vector2Int> itemIndexes = GetDeletedItems();
 
-        _scoreSystem.UpdateScore(itemIndexes.Count);
-
-        foreach(var currentPosition in itemIndexes)
+        if (itemIndexes.Count > 0)
         {
-            itemCells[currentPosition.x, currentPosition.y].ClearSlot();
-            cells[currentPosition.x, currentPosition.y] = false;
+            _scoreSystem.UpdateScore(itemIndexes.Count);
+
+            foreach (var currentPosition in itemIndexes)
+            {
+                itemCells[currentPosition.x, currentPosition.y].ClearSlot();
+                cells[currentPosition.x, currentPosition.y] = false;
+            }
+            AudioManager.Instance.PlayAudio(AudioIndexes.ClearRow);
         }
     }
 

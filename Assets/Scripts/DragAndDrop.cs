@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class DragAndDrop : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [SerializeField] private DragController _dragController;
+    [SerializeField] private DragController _dragController;    
     [SerializeField] private Image _image; 
     [SerializeField] private Sprite _icon;    
 
@@ -23,22 +23,28 @@ public class DragAndDrop : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public Sprite Icon => _icon;
 
 
-    [SerializeField] private List<RectTransform> _childDiamonds;
+    //[SerializeField] private List<RectTransform> _childDiamonds;
+    [SerializeField] private RectTransform _diamond;
     public List<Vector2Int> ChildPosition;
-
-    
+   
     private void Awake()
     {
         _camera = Camera.main;
         
         canvasGroup = GetComponent<CanvasGroup>();
 
-        foreach (var child in _childDiamonds)
+        foreach (var child in ChildPosition)
         {
-            Vector2Int newPosition = Vector2Int.FloorToInt(child.transform.position - transform.position);
-            ChildPosition.Add(newPosition);
+            RectTransform newDiamond = Instantiate(_diamond, (Vector3Int)child + transform.position, Quaternion.identity, transform);
+            //_childDiamonds.Add(newDiamond);            
         }
-        ChildPosition.Add(Vector2Int.zero);
+
+        //foreach (var child in _childDiamonds)
+        //{
+        //    Vector2Int newPosition = Vector2Int.FloorToInt(child.transform.position - transform.position);
+        //    ChildPosition.Add(newPosition);
+        //}
+        //ChildPosition.Add(Vector2Int.zero);
 
     }
 
@@ -50,7 +56,7 @@ public class DragAndDrop : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void Setup(DragController dragController)
     {
-        _dragController = dragController;
+        _dragController = dragController;        
     }   
 
     public void OnBeginDrag(PointerEventData touch)
@@ -75,9 +81,12 @@ public class DragAndDrop : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     }    
 
     public void OnEndDrag(PointerEventData eventData)
-    {        
-    //if (_dragController.SelectedItem == this)
-            Reset();
+    {
+        _dragController.DropItem();        
+
+        AudioManager.Instance.PlayAudio(AudioIndexes.Wrong);
+        
+        Reset();
 
         canvasGroup.blocksRaycasts = true;
     }

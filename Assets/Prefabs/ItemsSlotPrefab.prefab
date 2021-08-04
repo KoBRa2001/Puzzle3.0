@@ -129,3 +129,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   x: 0
   y: 0
+  _audioManager: {fileID: 6329956301796952758, guid: d3e3aed976cbd344281a464d7c54c6af,
+    type: 3}
+  _dropInSlotSound: {fileID: 2671293870999016574, guid: 79c950e205ee00b438aef6f7349aa3d9,
+    type: 3}

@@ -17,24 +17,23 @@ public class DragController : MonoBehaviour
             _selectedItem.Reset();
 
         _selectedItem = item;
-        _selectedItem.transform.SetParent(_dragParent);        
-        //DiamondPrefab = item.DiamondPrefab;
+        _selectedItem.transform.SetParent(_dragParent);               
     }
 
     public DragAndDrop TakeSelectedItem()
     {
         var item = _selectedItem;
-        _selectedItem = null;
+        //_selectedItem = null;
         return item;
     }    
 
-    public bool HasSelectedItem()
+    public void DropItem()
     {
-        //if(_selectedItem != null)
-        //{
-        //    return _selectedItem.CheckFreeCells();
-        //}
-        //return false;
+        _selectedItem = null;
+    }
+
+    public bool HasSelectedItem()
+    {        
         return _selectedItem != null;
     }
 }

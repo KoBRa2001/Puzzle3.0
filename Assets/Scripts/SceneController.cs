@@ -4,8 +4,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-
-//Comment for push
 public class SceneController : MonoBehaviour
 {
     [SerializeField] private Button _playButton;
@@ -30,16 +28,19 @@ public class SceneController : MonoBehaviour
 
     public void Play()
     {
+        AudioManager.Instance.PlayAudio(AudioIndexes.Click);
         SceneManager.LoadScene(1);
     }
 
     public void Back()
     {
+        AudioManager.Instance.PlayAudio(AudioIndexes.Click);
         SceneManager.LoadScene(0);
     }
 
     public void QuitGame()
     {
+        AudioManager.Instance.PlayAudio(AudioIndexes.Click);
         Debug.Log("Quit");
         Application.Quit();
     }

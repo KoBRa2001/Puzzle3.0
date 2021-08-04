@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+[RequireComponent(typeof(SpriteRenderer))]
 public class ItemSlot : MonoBehaviour//, IDropHandler
-{   
+{
     [SerializeField] private DiamandItem _diamondPrefab;
     [SerializeField] private ScoreSystem _scoreSystem;
 
@@ -18,13 +19,12 @@ public class ItemSlot : MonoBehaviour//, IDropHandler
 
     public Sprite icon;
 
-    public int x; 
+    public int x;
     public int y;
 
-
     public void SetupPrefab(DiamandItem newPrefab)
-    {
-        _diamondPrefab = newPrefab;
+    {        
+        _diamondPrefab = newPrefab;        
     }
 
     public bool CheckSlot()
@@ -44,48 +44,68 @@ public class ItemSlot : MonoBehaviour//, IDropHandler
         if (_itemInSlot == null)
             return;
 
-        Destroy(_itemInSlot.gameObject);       
+        Destroy(_itemInSlot.gameObject);
         _itemInSlot = null;
     }
-    
+
     private void OnMouseOver()
     {
         if (!isEmpty)
+        {                    
             return;
+        }
+
+        if (_dragController.HasSelectedItem())
+        {
+            var selectedItem = _dragController.TakeSelectedItem();
+            if (_gridController.CheckCell(x, y, selectedItem))
+            {                
+                _gridController.HighlightSlot();
+            }
+        }
 
         if (Input.GetMouseButtonUp(0) && _dragController.HasSelectedItem())
         {
             var selectedItem = _dragController.TakeSelectedItem();
             if (_gridController.CheckCell(x, y, selectedItem))
-            {                             
+            {
                 SetCell(selectedItem);
                 icon = selectedItem.Icon;
 
                 _scoreSystem.UpdateScore(selectedItem.ChildPosition.Count);
-
+                AudioManager.Instance.PlayAudio(AudioIndexes.DropInSlot);
                 selectedItem.Clear();
                 Destroy(selectedItem.gameObject);
+
+                //_gridController.ResetHighlight();
 
                 if (_gridController.CheckGameOver())
                     Debug.Log("Game Over");
             }
-        }        
+            _gridController.ResetHighlight();
+            _dragController.DropItem();            
+        }
+    }
+
+    private void OnMouseExit()
+    {
+        _gridController.ResetHighlight();
     }
 
     public void SetItemInSlot(DiamandItem item)
     {
         _itemInSlot = item;
         if (icon != null)
-            _itemInSlot.SetSprite(icon);       
+            _itemInSlot.SetSprite(icon);
     }
 
     public void SetCell(DragAndDrop item)
     {
         //TODO: rewrite this, добавити метод в клас GridController SetItem(int x, int y, List<Vector2Int> positions) і викликати його тут
 
-        foreach(var position in item.ChildPosition)
+        foreach (var position in item.ChildPosition)
         {
-            _gridController.SetCell(x + position.x, y + position.y, _diamondPrefab);        
+            _gridController.SetCell(x + position.x, y + position.y, _diamondPrefab);
         }
     }
 }
